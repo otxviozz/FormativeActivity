@@ -150,14 +150,34 @@ def showaddtask():
     st.header("Adicionar tarefa")
     st.markdown("Preencha os dados abaixo:")
 
-    with st.form("form_project", clear_on_submit=True):
+    # Conexão com banco para pegar membros e projetos
+    conexao = connect_mysql()
+    cursor = conexao.cursor()
+
+    cursor.execute("SELECT id_projeto, nome FROM projeto")
+    projetos = cursor.fetchall()
+
+    cursor.execute("SELECT id_membro, nome FROM membro")
+    membros = cursor.fetchall()
+    # Esse fetchall utilizado as duas vezes acima serve para guardamos toda a consulta SQL que fizemos
+
+    cursor.close()
+    conexao.close()
+
+    with st.form("form_task", clear_on_submit=True):
         col1, col2 = st.columns(2)
 
         with col1:
             descricao = st.text_input("Descrição da tarefa")
             data_inicio = st.date_input("Data de Início", value=datetime.date.today())
             data_fim = st.date_input("Data de Término")
-            status = st.selectbox("Status da tarefa",options=["Em andamento", "Concluída", "Atrasada"])
+            status = st.selectbox("Status da tarefa", options=["Em andamento", "Concluída", "Atrasada"])
+
+            projeto_escolhido = st.selectbox("Projeto", projetos, format_func=lambda x: x[1])
+            membro_escolhido = st.selectbox("Membro responsável", membros, format_func=lambda x: x[1])
+
+            #utilizamos acima o fetchall que salvou a consulta para exibirmos somente membros e projetos existentes para exibí-los
+            #utilizamos lambda para concatenar de maneira mais bonita na saída do SelectBox, pois se não ficaria uma mensagem pouco intuitiva 
 
         col_btn1, col_btn2 = st.columns([1, 1])
 
@@ -166,14 +186,18 @@ def showaddtask():
 
         if gravar:
             if descricao:
-                if data_fim >= data_inicio:
-                    sucesso = dbsendtask(descricao, data_inicio, data_fim, status)
-                    if sucesso:
-                        st.success("Tarefa gravada com sucesso!")
-                    else:
-                        st.error("Erro ao gravar a tarefa.")
+                sucesso = dbsendtask(
+                    projeto_escolhido[0],  # id_projeto
+                    membro_escolhido[0],  # id_membro
+                    descricao,
+                    data_inicio,
+                    data_fim,
+                    status
+                )
+                if sucesso:
+                    st.success("Tarefa gravada com sucesso!")
                 else:
-                    st.warning("A data de término deve ser maior ou igual à data de início.")
+                    st.error("Erro ao gravar a tarefa.")
             else:
                 st.warning("Descrição é obrigatória!")
 
