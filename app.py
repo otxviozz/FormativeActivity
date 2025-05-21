@@ -60,6 +60,31 @@ def dbsendproject(nome, descricao, data_inicio, data_fim):
     except Exception as e:
         print(f"[ERRO SQL] Não foi possível gravar o projeto: {e}")
         return False
+    
+def dbsendtask(descricao, data_inicio, data_fim, status):
+    try:
+        conexao = connect_mysql()
+        cursor = conexao.cursor()
+
+        comando = """
+            INSERT INTO tarefa (
+                descricao, data_inicio, data_fim, status
+            ) VALUES (%s, %s, %s, %s)
+        """
+
+        valores = (descricao, data_inicio, data_fim, status)
+
+        cursor.execute(comando, valores)
+        conexao.commit()
+
+        cursor.close()
+        conexao.close()
+
+        return True
+
+    except Exception as e:
+        print(f"[ERRO SQL] Não foi possível gravar o projeto: {e}")
+        return False
 #
 
 #funções para fazer o formulário de cada coisa
@@ -119,8 +144,32 @@ def showaddproject():
                 st.warning("Nome é obrigatório!")
 
 def showaddtask():
-    st.subheader("Adicionar Tarefa")
-    st.info("Formulário de tarefa em construção")
+    st.header("Adicionar tarefa")
+    st.markdown("Preencha os dados abaixo:")
+
+    with st.form("form_project", clear_on_submit=True):
+        col1, col2 = st.columns(2)
+
+        with col1:
+            descricao = st.text_input("Descrição da tarefa")
+            data_inicio = st.date_input("Data de Início", value=datetime.date.today())
+            data_fim = st.date_input("Data de Término")
+            status = st.text_input("Status da tarefa")
+
+        col_btn1, col_btn2 = st.columns([1, 1])
+
+        with col_btn1:
+            gravar = st.form_submit_button("Gravar", type="primary")
+
+        if gravar:
+            if descricao:
+                sucesso = dbsendtask( descricao, data_inicio, data_fim, status)
+                if sucesso:
+                    st.success("Projeto gravado com sucesso!")
+                else:
+                    st.error("Erro ao gravar o projeto.")
+            else:
+                st.warning("Descrição é obrigatório!")
 
 
 if "tela" not in st.session_state:
