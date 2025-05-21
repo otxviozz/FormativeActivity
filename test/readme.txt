@@ -1,0 +1,1 @@
+ao importar tudo, lembra de importar esse sql tbm e apagar essa pasta aq de teste, ela só serve pra salvar o banco pra usar em outras máquinas.
