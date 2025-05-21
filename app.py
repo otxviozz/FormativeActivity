@@ -173,8 +173,11 @@ def showaddtask():
             data_fim = st.date_input("Data de Término")
             status = st.selectbox("Status da tarefa", options=["Em andamento", "Concluída", "Atrasada"])
 
-            projeto_escolhido = st.selectbox("Projeto", projetos, format_func=lambda x: x[1])
-            membro_escolhido = st.selectbox("Membro responsável", membros, format_func=lambda x: x[1])
+            projetos_opcoes = [("","Escolha um projeto")] + projetos
+            membros_opcoes = [("","Escolha um membro")] + membros
+
+            projeto_escolhido = st.selectbox("Projeto", projetos_opcoes, format_func=lambda x: x[1])
+            membro_escolhido = st.selectbox("Membro responsável", membros_opcoes, format_func=lambda x: x[1])
 
             #utilizamos acima o fetchall que salvou a consulta para exibirmos somente membros e projetos existentes para exibí-los
             #utilizamos lambda para concatenar de maneira mais bonita na saída do SelectBox, pois se não ficaria uma mensagem pouco intuitiva 
@@ -185,10 +188,16 @@ def showaddtask():
             gravar = st.form_submit_button("Gravar", type="primary")
 
         if gravar:
-            if descricao:
+            if not descricao:
+                st.warning("Descrição é obrigatória!")
+            elif projeto_escolhido[0] == "":
+                st.warning("Você deve escolher um projeto!")
+            elif membro_escolhido[0] == "":
+                st.warning("Você deve escolher um membro responsável!")
+            else:
                 sucesso = dbsendtask(
-                    projeto_escolhido[0],  # id_projeto
-                    membro_escolhido[0],  # id_membro
+                    projeto_escolhido[0],
+                    membro_escolhido[0],
                     descricao,
                     data_inicio,
                     data_fim,
@@ -198,8 +207,6 @@ def showaddtask():
                     st.success("Tarefa gravada com sucesso!")
                 else:
                     st.error("Erro ao gravar a tarefa.")
-            else:
-                st.warning("Descrição é obrigatória!")
 
 
 if "tela" not in st.session_state:
