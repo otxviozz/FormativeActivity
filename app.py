@@ -179,23 +179,28 @@ def showaddtask():
 
 
 if "tela" not in st.session_state:
-    st.session_state["tela"] = "principal"
+    st.session_state["tela"] = None 
 
-st.title(" Gestão de Projetos")
+st.title("Gestão de Projetos")
+st.subheader("Escolha uma opção:")
 
-if st.session_state["tela"] == "principal":
-    st.subheader("Escolha uma opção:")
+col1, col2, col3 = st.columns(3)
 
+with col1:
     if st.button("Adicionar Membro", key="btn_add_membro"):
         st.session_state["tela"] = "membro"
 
+with col2:
     if st.button("Adicionar Projeto", key="btn_add_projeto"):
         st.session_state["tela"] = "projeto"
 
+with col3:
     if st.button("Adicionar Tarefa", key="btn_add_tarefa"):
         st.session_state["tela"] = "tarefa"
 
-elif st.session_state["tela"] == "membro":
+st.divider()
+
+if st.session_state["tela"] == "membro":
     showaddmember()
 
 elif st.session_state["tela"] == "projeto":
