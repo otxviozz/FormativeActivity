@@ -10,7 +10,30 @@ def connect_mysql():
     )
 
 #funções para enviar pro banco virão aqui
+def dbsendmember(nome, email, cargo):
+    try:
+        conexao = connect_mysql()
+        cursor = conexao.cursor()
 
+        comando = """
+            INSERT INTO curso (
+                nome, email, cargo
+            ) VALUES (%s, %s, %s)
+        """
+
+        valores = (nome, email, cargo)
+
+        cursor.execute(comando, valores)
+        conexao.commit()
+
+        cursor.close()
+        conexao.close()
+
+        return True
+
+    except Exception as e:
+        print(f"[ERRO SQL] Não foi possível gravar curso: {e}")
+        return False
 #
 
 #funções para fazer o formulário de cada coisa
@@ -33,7 +56,7 @@ def showaddmember():
 
         if gravar:
             if nome and email:
-                sucesso = sendstudenttosql(nome, cpf, sexo, uf, cidade, rua, numero, telefone_fixo, telefone_celular, idade)
+                sucesso = dbsendmember(nome, email, cargo)
                 if sucesso:
                     st.success("Aluno gravado com sucesso!")
                 else:
