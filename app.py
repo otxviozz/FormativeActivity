@@ -231,7 +231,7 @@ def view_members():
     st.subheader("Lista de Membros")
     conexao = connect_mysql()
     cursor = conexao.cursor()
-    cursor.execute("SELECT id, nome, email, cargo FROM membro")
+    cursor.execute("SELECT id_membro, nome, email, cargo FROM membro")
     membros = cursor.fetchall()
 
     conexao.close()
