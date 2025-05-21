@@ -1,3 +1,4 @@
+import datetime
 import streamlit as st
 import mysql.connector as mysql
 
@@ -16,7 +17,7 @@ def dbsendmember(nome, email, cargo):
         cursor = conexao.cursor()
 
         comando = """
-            INSERT INTO curso (
+            INSERT INTO membro (
                 nome, email, cargo
             ) VALUES (%s, %s, %s)
         """
@@ -32,7 +33,32 @@ def dbsendmember(nome, email, cargo):
         return True
 
     except Exception as e:
-        print(f"[ERRO SQL] Não foi possível gravar curso: {e}")
+        print(f"[ERRO SQL] Não foi possível gravar o membro: {e}")
+        return False
+    
+def dbsendproject(nome, descricao, data_inicio, data_fim):
+    try:
+        conexao = connect_mysql()
+        cursor = conexao.cursor()
+
+        comando = """
+            INSERT INTO projeto (
+                nome, descricao, data_inicio, data_fim
+            ) VALUES (%s, %s, %s, %s)
+        """
+
+        valores = (nome, descricao, data_inicio, data_fim)
+
+        cursor.execute(comando, valores)
+        conexao.commit()
+
+        cursor.close()
+        conexao.close()
+
+        return True
+
+    except Exception as e:
+        print(f"[ERRO SQL] Não foi possível gravar o projeto: {e}")
         return False
 #
 
@@ -58,26 +84,49 @@ def showaddmember():
             if nome and email:
                 sucesso = dbsendmember(nome, email, cargo)
                 if sucesso:
-                    st.success("Aluno gravado com sucesso!")
+                    st.success("Membro gravado com sucesso!")
                 else:
-                    st.error("Erro ao gravar aluno.")
+                    st.error("Erro ao gravar o membro.")
             else:
-                st.warning("Nome e CPF são obrigatórios!")
+                st.warning("Nome e email são obrigatórios!")
 
 def showaddproject():
-    st.subheader("Adicionar Projeto")
-    st.info("Formulário de projeto em construção")
+    st.header("Adicionar projeto")
+    st.markdown("Preencha os dados abaixo:")
+
+    with st.form("form_project", clear_on_submit=True):
+        col1, col2 = st.columns(2)
+
+        with col1:
+            nome = st.text_input("Nome do projeto")
+            descricao = st.text_input("Descrição")
+            data_inicio = st.date_input("Data de Início", value=datetime.date.today())
+            data_fim = st.date_input("Data de Término")
+
+        col_btn1, col_btn2 = st.columns([1, 1])
+
+        with col_btn1:
+            gravar = st.form_submit_button("Gravar", type="primary")
+
+        if gravar:
+            if nome:
+                sucesso = dbsendproject(nome, descricao, data_inicio, data_fim)
+                if sucesso:
+                    st.success("Projeto gravado com sucesso!")
+                else:
+                    st.error("Erro ao gravar o projeto.")
+            else:
+                st.warning("Nome é obrigatório!")
 
 def showaddtask():
     st.subheader("Adicionar Tarefa")
     st.info("Formulário de tarefa em construção")
-#
 
 
 if "tela" not in st.session_state:
     st.session_state["tela"] = "principal"
 
-st.title("🧩 Gestão de Projetos")
+st.title(" Gestão de Projetos")
 
 if st.session_state["tela"] == "principal":
     st.subheader("Escolha uma opção:")
