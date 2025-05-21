@@ -1,6 +1,7 @@
 import datetime
 import streamlit as st
 import mysql.connector as mysql
+import pandas as pd
 
 def connect_mysql():
     return mysql.connect(
@@ -194,6 +195,8 @@ def showaddtask():
                 st.warning("Você deve escolher um projeto!")
             elif membro_escolhido[0] == "":
                 st.warning("Você deve escolher um membro responsável!")
+            elif data_inicio > data_fim:
+                st.warning("A data de início não pode ser posterior à data de término!")
             else:
                 sucesso = dbsendtask(
                     projeto_escolhido[0],
@@ -208,6 +211,72 @@ def showaddtask():
                 else:
                     st.error("Erro ao gravar a tarefa.")
 
+def showvisualizacao():
+    st.header("Visualizar registros")
+
+    tipo_visualizacao = st.selectbox(
+        "Escolha o que deseja visualizar:",
+        ["Selecione", "Membros", "Projetos", "Tarefas"]
+    )
+
+    if st.button("Visualizar"):
+        if tipo_visualizacao == "Membros":
+            view_members()
+        elif tipo_visualizacao == "Projetos":
+            view_projects()
+        elif tipo_visualizacao == "Tarefas":
+            view_tasks()
+
+def view_members():
+    st.subheader("Lista de Membros")
+    conexao = connect_mysql()
+    cursor = conexao.cursor()
+    cursor.execute("SELECT id, nome, email, cargo FROM membro")
+    membros = cursor.fetchall()
+
+    conexao.close()
+    cursor.close()
+
+    if membros:
+        df = pd.DataFrame(membros, columns=["ID", "Nome", "Email", "Cargo"])
+        st.table(df)
+    else:
+        st.info("Nenhum membro encontrado.")
+
+def view_projects():
+    st.subheader("Lista de Projetos")
+    conexao = connect_mysql()
+    cursor = conexao.cursor()
+    cursor.execute("SELECT id_projeto, nome, descricao, data_inicio, data_fim FROM projeto")
+    projetos = cursor.fetchall()
+
+    conexao.close()
+    cursor.close()
+
+    if projetos:
+        df = pd.DataFrame(projetos, columns=["ID", "Nome", "Descrição", "Data de início", "Data de fim"])
+        st.table(df)
+    else:
+        st.info("Nenhum projeto encontrado.")
+
+
+def view_tasks():
+    st.subheader("Lista de Tarefas")
+    conexao = connect_mysql()
+    cursor = conexao.cursor()
+    cursor.execute("SELECT id_tarefa, id_projeto, id_membro, descricao, data_inicio, data_fim, status FROM tarefa")
+    tarefas = cursor.fetchall()
+
+    conexao.close()
+    cursor.close()
+
+    if tarefas:
+        df = pd.DataFrame(tarefas, columns=["ID-Tarefa", "ID-Projeto", "ID-Membro", "Descrição", "Data de início", "Data de fim", "Status"])
+        st.table(df)
+    else:
+        st.info("Nenhuma tarefa encontrada.")
+
+
 
 if "tela" not in st.session_state:
     st.session_state["tela"] = None 
@@ -215,7 +284,7 @@ if "tela" not in st.session_state:
 st.title("Gestão de Projetos")
 st.subheader("Escolha uma opção:")
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     if st.button("Adicionar Membro", key="btn_add_membro"):
@@ -229,6 +298,10 @@ with col3:
     if st.button("Adicionar Tarefa", key="btn_add_tarefa"):
         st.session_state["tela"] = "tarefa"
 
+with col4:
+    if st.button("Visualizar tabelas", key="btn_view"):
+        st.session_state["tela"] = "visualizar"
+
 st.divider()
 
 if st.session_state["tela"] == "membro":
@@ -239,3 +312,6 @@ elif st.session_state["tela"] == "projeto":
 
 elif st.session_state["tela"] == "tarefa":
     showaddtask()
+
+elif st.session_state["tela"] == "visualizar":
+    showvisualizacao()
