@@ -61,18 +61,18 @@ def dbsendproject(nome, descricao, data_inicio, data_fim):
         print(f"[ERRO SQL] Não foi possível gravar o projeto: {e}")
         return False
     
-def dbsendtask(descricao, data_inicio, data_fim, status):
+def dbsendtask(id_projeto, id_membro, descricao, data_inicio, data_fim, status):
     try:
         conexao = connect_mysql()
         cursor = conexao.cursor()
 
         comando = """
             INSERT INTO tarefa (
-                descricao, data_inicio, data_fim, status
-            ) VALUES (%s, %s, %s, %s)
+                id_projeto, id_membro, descricao, data_inicio, data_fim, status
+            ) VALUES (%s, %s, %s, %s, %s, %s)
         """
 
-        valores = (descricao, data_inicio, data_fim, status)
+        valores = (id_projeto, id_membro, descricao, data_inicio, data_fim, status)
 
         cursor.execute(comando, valores)
         conexao.commit()
