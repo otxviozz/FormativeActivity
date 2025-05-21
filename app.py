@@ -106,14 +106,14 @@ def showaddmember():
             gravar = st.form_submit_button("Gravar", type="primary")
 
         if gravar:
-            if nome and email:
+            if nome and email and cargo:
                 sucesso = dbsendmember(nome, email, cargo)
                 if sucesso:
                     st.success("Membro gravado com sucesso!")
                 else:
                     st.error("Erro ao gravar o membro.")
             else:
-                st.warning("Nome e email são obrigatórios!")
+                st.warning("Todos os campos são obrigatórios!")
 
 def showaddproject():
     st.header("Adicionar projeto")
@@ -134,14 +134,17 @@ def showaddproject():
             gravar = st.form_submit_button("Gravar", type="primary")
 
         if gravar:
-            if nome:
-                sucesso = dbsendproject(nome, descricao, data_inicio, data_fim)
-                if sucesso:
-                    st.success("Projeto gravado com sucesso!")
+            if nome and descricao:
+                if data_fim >= data_inicio:
+                    sucesso = dbsendproject(nome, descricao, data_inicio, data_fim)
+                    if sucesso:
+                        st.success("Projeto gravado com sucesso!")
+                    else:
+                        st.error("Erro ao gravar o projeto.")
                 else:
-                    st.error("Erro ao gravar o projeto.")
+                    st.warning("A data de término deve ser maior ou igual à data de início.")
             else:
-                st.warning("Nome é obrigatório!")
+                st.warning("Todos os campos são obrigatórios!")
 
 def showaddtask():
     st.header("Adicionar tarefa")
@@ -154,7 +157,7 @@ def showaddtask():
             descricao = st.text_input("Descrição da tarefa")
             data_inicio = st.date_input("Data de Início", value=datetime.date.today())
             data_fim = st.date_input("Data de Término")
-            status = st.text_input("Status da tarefa")
+            status = st.selectbox("Status da tarefa",options=["Em andamento", "Concluída", "Atrasada"])
 
         col_btn1, col_btn2 = st.columns([1, 1])
 
@@ -163,13 +166,16 @@ def showaddtask():
 
         if gravar:
             if descricao:
-                sucesso = dbsendtask( descricao, data_inicio, data_fim, status)
-                if sucesso:
-                    st.success("Projeto gravado com sucesso!")
+                if data_fim >= data_inicio:
+                    sucesso = dbsendtask(descricao, data_inicio, data_fim, status)
+                    if sucesso:
+                        st.success("Tarefa gravada com sucesso!")
+                    else:
+                        st.error("Erro ao gravar a tarefa.")
                 else:
-                    st.error("Erro ao gravar o projeto.")
+                    st.warning("A data de término deve ser maior ou igual à data de início.")
             else:
-                st.warning("Descrição é obrigatório!")
+                st.warning("Descrição é obrigatória!")
 
 
 if "tela" not in st.session_state:
